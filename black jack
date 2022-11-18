@@ -1,0 +1,281 @@
+#include <iostream>
+#include <array>
+#include <cstdlib>
+#include <vector>
+#include <string>
+
+enum Dostoinstva
+{
+	DOSTOINSTVA_TWO,
+	DOSTOINSTVA_THREE,
+	DOSTOINSTVA_FOUR,
+	DOSTOINSTVA_FIVE,
+	DOSTOINSTVA_SIX,
+	DOSTOINSTVA_SEVEN,
+	DOSTOINSTVA_EIGHT,
+	DOSTOINSTVA_NINE,
+	DOSTOINSTVA_TEN,
+	DOSTOINSTVA_VALET,
+	DOSTOINSTVA_DAMA,
+	DOSTOINSTVA_KING,
+	DOSTOINSTVA_TUZ,
+	MAX_DOSTOINSTV,
+};
+
+enum Mast
+{
+	MAST_TREFY,
+	MAST_BUBNY,
+	MAST_CHERVY,
+	MAST_PIKI,
+	MAX_MASTY,
+};
+
+struct Card
+{
+	Dostoinstva x;
+	Mast y;
+};
+
+void print_card(const Card *carta)
+{
+	switch (carta -> x)
+	{
+		case DOSTOINSTVA_TWO:
+			std::cout << '2';
+			break;
+		case DOSTOINSTVA_THREE:
+			std::cout << '3';
+			break;
+		case DOSTOINSTVA_FOUR:
+			std::cout << '4';
+			break;
+		case DOSTOINSTVA_FIVE:
+			std::cout << '5';
+			break;
+		case DOSTOINSTVA_SIX:
+			std::cout << '6';
+			break;
+		case DOSTOINSTVA_SEVEN:
+			std::cout << '7';
+			break;
+		case DOSTOINSTVA_EIGHT:
+			std::cout << '8';
+			break;
+		case DOSTOINSTVA_NINE:
+			std::cout << '9';
+			break;
+		case DOSTOINSTVA_TEN:
+			std::cout << '1' << '0';
+			break;
+		case DOSTOINSTVA_VALET:
+			std::cout << 'V';
+			break;
+		case DOSTOINSTVA_DAMA:
+			std::cout << 'D';
+			break;
+		case DOSTOINSTVA_KING:
+			std::cout << 'K';
+			break;
+		case DOSTOINSTVA_TUZ:
+			std::cout << 'T';
+			break;
+	}
+	
+	switch (carta -> y)
+	{
+		case MAST_TREFY:
+			std::cout << 'T' << 'R';
+			break;
+		case MAST_BUBNY:
+			std::cout << 'B';
+			break;
+		case MAST_CHERVY:
+			std::cout << 'C' << 'H';
+			break;
+		case MAST_PIKI:
+			std::cout << 'P';
+			break;
+	}
+}
+
+void print_deck(const std::array<Card, 52> &deck)
+{
+	for(const auto &element: deck)
+	{
+		std::cout << ' ';
+		print_card(&element); 
+	}
+	
+	std::cout << std::endl;
+}
+
+void swap_card(Card &carta_1, Card &carta_2)
+{
+	Card buff;
+
+	buff = carta_1;
+	carta_1 = carta_2;
+	carta_2 = buff;
+}
+
+int get_random_number(int min, int max)
+{
+	static const double fraction = 1.0 / (static_cast<double>(RAND_MAX) + 1.0);
+	return static_cast<int>(rand() * fraction * (max - min + 1) + min);
+}
+
+void shuffle_deck (std::array<Card, 52> &peretasovka)
+{
+	int peret;
+	for (int i = 0; i < 52; ++i)
+	{
+		peret = get_random_number(0, 51);
+		swap_card(peretasovka[i], peretasovka[peret]);
+	}
+}
+
+int get_card_value(const Card *carta)
+{
+	if ((carta->x == DOSTOINSTVA_VALET) || (carta->x == DOSTOINSTVA_DAMA) || (carta->x == DOSTOINSTVA_KING))
+		return 10;
+
+	if (carta->x == DOSTOINSTVA_TUZ)
+		return 11;
+
+	return static_cast<int>(carta->x) + 2;
+}
+
+bool igrok_beret (std::vector<Card> &igrok, std::array<Card, 52> &deck, int buff_igr, int buff_deck)
+{
+	std::string inf_from_the_player;
+
+	do 
+	{
+		std::cout << "Take card \"hit\", hold card \"stand\": ";
+		std::cin >> inf_from_the_player;
+	}while((inf_from_the_player != "hit") && (inf_from_the_player != "stand"));
+
+	if (inf_from_the_player == "hit")
+	{
+		igrok.resize(buff_igr);
+		igrok[buff_igr] = deck[buff_deck];
+		return true;
+	}
+
+	return false;
+}
+
+bool diller_beret (std::vector<Card> &diller, std::array<Card, 52> &deck, int buff_dil, int buff_deck, int sum_dil)
+{
+	if (sum_dil <= 17) 
+	{
+		diller.resize(buff_dil);
+		diller[buff_dil] = deck[buff_deck];
+		return true;
+	}
+
+	return false;
+}
+
+int main()
+{
+	srand(static_cast<unsigned int>(time(0)));
+
+	Card carta;
+	
+	carta.x = DOSTOINSTVA_TUZ;
+	carta.y = MAST_PIKI;
+
+	std::array<Card, 52> deck;
+
+	int count = 0;
+	for (int j = 0; j < MAX_DOSTOINSTV; ++j)
+		for (int i = 0; i < MAX_MASTY; ++i)
+		{
+			deck[count].x = static_cast<Dostoinstva>(j);
+			deck[count].y = static_cast<Mast>(i);
+
+			count++;
+		}
+
+	shuffle_deck(deck);
+
+	int deck_perem = 0;
+	int igr_perem = 0;
+	int dil_perem = 0;
+
+	std::vector<Card> diller {deck[deck_perem++]};
+	std::vector<Card> igrok {deck[deck_perem++], deck[deck_perem++]};
+
+	std::cout << "Diller has: ";
+	print_card(&diller[dil_perem]);
+	std::cout << std::endl;
+	std::cout << "You have: ";
+	print_card(&igrok[igr_perem++]);
+	std::cout << ' ';
+	print_card(&igrok[igr_perem]);
+
+	igr_perem = 0;
+	dil_perem = 0;
+
+	int sum_igr = get_card_value(&igrok[igr_perem++]) + get_card_value(&igrok[igr_perem++]);
+	int sum_dil = get_card_value(&diller[dil_perem++]);
+
+	std::cout << std::endl;
+
+	bool igrok_vzyal{true}, diller_vzyal{true};
+
+	do
+	{
+		if (igrok_beret(igrok, deck, igr_perem, deck_perem))
+		{
+			sum_igr += get_card_value(&igrok[igr_perem++]);
+			igrok_vzyal = true;
+		}
+		else 
+			igrok_vzyal = false;
+		std::cout << "Your card: ";
+		for (int a = 0; a < igr_perem; ++a)
+		{
+			print_card(&igrok[a]);	
+			std::cout << ' ';
+		}
+
+		std::cout << "\nIgrok take and him sum = " << sum_igr << std::endl;
+
+		if(diller_beret(diller, deck, dil_perem, deck_perem, sum_dil))
+		{
+			sum_dil += get_card_value(&diller[dil_perem++]);
+			diller_vzyal = true;
+		}
+		else 
+			diller_vzyal = false;
+		std::cout << "Diller card: ";
+		for (int a = 0; a < dil_perem; ++a)
+		{
+			print_card(&diller[a]);
+			std::cout << ' ';
+		}
+
+    	std::cout << "\nDiller take and him sum = " << sum_dil << std::endl;
+		
+		if (sum_igr > 21 || sum_dil > 21)
+			{
+				break;
+			}
+	}while(igrok_vzyal || diller_vzyal);
+
+	if ((sum_igr <= 21) && (sum_igr >= sum_dil))
+		std::cout << "\nIgrok win";
+	else if (sum_igr >= 21)
+		std::cout << "\nIgrok lose";
+	if ((sum_dil <= 21) && (sum_dil >= sum_igr))
+		std::cout << "\nDiller win";
+	else if (sum_dil >= 21)
+		std::cout << "\nDiller lose" << std::endl;
+
+	std::cout << std::endl;
+
+return 0;
+}
